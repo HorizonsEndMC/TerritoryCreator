@@ -19,8 +19,7 @@ import javax.swing.JFileChooser
 import javax.swing.JFrame
 import javax.swing.JOptionPane
 
-class App(image: BufferedImage) : JFrame("Territory Creator v1.2.0"), Runnable, MouseListener,
-    KeyListener {
+class App(bufferedImage: BufferedImage) : JFrame("Territory Creator v1.2.0"), Runnable, MouseListener, KeyListener {
     private val objects = ArrayList<ScreenObject>()
     private var focus: ScreenObject? = null
     private val nameBox: TextBox
@@ -35,29 +34,41 @@ class App(image: BufferedImage) : JFrame("Territory Creator v1.2.0"), Runnable, 
     private var upPressed = false
     private var downPressed = false
 
+    private var selectedTerritory: Territory? = null
+
     init {
-        var image = image
+        var image = bufferedImage
+
         defaultCloseOperation = 3
+
         val scaleX = image.width.toDouble()
         val scaleY = image.height.toDouble()
+
         background = Color.BLACK
+
         image = resize(image, 800, 800)
         instance = this
+
         setSize(1030, 800)
+
         tm = TerritoryMap(image)
         objects.add(tm)
+
         nameBox = TextBox("Enter Territory Name...", 810, 40, 200, 50)
         scaleXBox = TextBox(scaleX.toString() + "", 810, 100, 200, 50)
         scaleYBox = TextBox(scaleY.toString() + "", 810, 160, 200, 50)
         tlcornerX = TextBox("0", 810, 220, 200, 50)
         tlcornerY = TextBox("0", 810, 280, 200, 50)
+
         moveSpeed = TextBox("Enter Move Speed (default 5)...", 810, 340, 200, 50)
+
         objects.add(nameBox)
         objects.add(scaleXBox)
         objects.add(scaleYBox)
         objects.add(tlcornerX)
         objects.add(tlcornerY)
         objects.add(moveSpeed)
+
         val finishTerritory = Button("Finish Territory", {
             if (tm.enteredPoints.size > 0) {
                 tm.finishTerritory(nameBox.text)
@@ -65,7 +76,9 @@ class App(image: BufferedImage) : JFrame("Territory Creator v1.2.0"), Runnable, 
             }
             finish()
         }, 810, 400, 200, 50)
+
         objects.add(finishTerritory)
+
         val removeTerritory = Button("Remove Named Territory", {
             val name = nameBox.text
             if (name == "Enter Territory Name...") {
@@ -74,19 +87,24 @@ class App(image: BufferedImage) : JFrame("Territory Creator v1.2.0"), Runnable, 
                 tm.removeTerritory(name)
             }
         }, 810, 580, 200, 50)
+
         objects.add(removeTerritory)
+
         addMouseListener(this)
         addKeyListener(this)
+
         isVisible = true
+
         addWindowListener(object : WindowAdapter() {
             override fun windowClosed(e: WindowEvent) {
                 System.exit(0)
             }
         })
+
         try {
             Thread.sleep(1000L)
-        } catch (var9: InterruptedException) {
-            var9.printStackTrace()
+        } catch (exception: InterruptedException) {
+            exception.printStackTrace()
         }
     }
 
@@ -105,6 +123,7 @@ class App(image: BufferedImage) : JFrame("Territory Creator v1.2.0"), Runnable, 
             val tly: Int
             var sx: Double
             var sy: Double
+
             try {
                 tlx = tlcornerX.text.trim { it <= ' ' }.toInt()
                 tly = tlcornerY.text.trim { it <= ' ' }.toInt()
@@ -114,8 +133,10 @@ class App(image: BufferedImage) : JFrame("Territory Creator v1.2.0"), Runnable, 
                 errorPopup("One of the numbers entered was not a number.")
                 return
             }
+
             sx /= 800.0
             sy /= 800.0
+
             try {
                 val f = File(ymlName)
                 if (!f.exists()) f.createNewFile()
@@ -129,18 +150,24 @@ class App(image: BufferedImage) : JFrame("Territory Creator v1.2.0"), Runnable, 
             } catch (var26: Exception) {
                 var26.printStackTrace()
             }
+
             println("0, 0 is located at pixels: ")
+
             val rtlx = tlx / sx
             val rtly = tlx / sy
             val nx = (rtlx + 0.0) * sx
             val ny = (rtly + 0.0) * sy
+
             println("$nx,$ny")
             println("1000, 1000 is located at pixels: ")
+
             val rtlx2 = tlx / sx
             val rtly2 = tlx / sy
             val nx2 = (rtlx2 + 1000.0) * sx
             val ny2 = (rtly2 + 1000.0) * sy
+
             println("$nx2,$ny2")
+
             try {
                 val f2 = File(fileName.substring(0, fileName.length - 4) + "-map.png")
                 if (!f2.exists()) f2.createNewFile()
@@ -149,6 +176,7 @@ class App(image: BufferedImage) : JFrame("Territory Creator v1.2.0"), Runnable, 
                 var24.printStackTrace()
                 JOptionPane.showMessageDialog(this, var24, "Error", 0)
             }
+
             JOptionPane.showMessageDialog(this, "Finished Exporting", "Done", 1)
         }
     }
@@ -252,6 +280,7 @@ class App(image: BufferedImage) : JFrame("Territory Creator v1.2.0"), Runnable, 
     }
 
     override fun mouseClicked(e: MouseEvent) {}
+
     override fun mousePressed(arg0: MouseEvent) {
         val p = Point(arg0.x - 100, arg0.y - 100)
         if (focus != null && focus!!.pointWithin(p)) {
@@ -275,16 +304,12 @@ class App(image: BufferedImage) : JFrame("Territory Creator v1.2.0"), Runnable, 
     override fun mouseReleased(arg0: MouseEvent) {}
     override fun mouseEntered(e: MouseEvent) {}
     override fun mouseExited(e: MouseEvent) {}
-    private fun debug(value: String) {
-        println(value)
-    }
 
     companion object {
         private const val serialVersionUID = 1L
         lateinit var fileName: String
         lateinit var ymlName: String
-        lateinit var instance: App
-            private set
+        lateinit var instance: App private set
 
         private fun resize(img: BufferedImage, newW: Int, newH: Int): BufferedImage {
             val tmp = img.getScaledInstance(newW, newH, 4)
@@ -294,8 +319,6 @@ class App(image: BufferedImage) : JFrame("Territory Creator v1.2.0"), Runnable, 
             g2d.dispose()
             return dimg
         }
-
-
 
         fun readInfoFromUser(): Array<String> {
             val s = Scanner(System.`in`)
